@@ -11,9 +11,12 @@ octokit.authenticate({
 });
 
 async function createStatus(pullRequest, pass, targetUrl, description) {
+	const fullName = pullRequest.head.repo.full_name;  // "unicode-org/icu"
+	const owner = fullName.split("/")[0];
+	const repo = fullName.substr(owner.length + 1);
 	await octokit.repos.createStatus({
-		owner: process.env.GITHUB_OWNER,
-		repo: process.env.GITHUB_REPO,
+		owner: owner,
+		repo: repo,
 		sha: pullRequest["head"]["sha"],
 		state: pass ? "success" : "failure",
 		target_url: targetUrl,

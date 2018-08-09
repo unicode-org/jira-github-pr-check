@@ -20,5 +20,3 @@ The following environment variables are expected.  If a `.env` file is present, 
 - JIRA_URL (for example, unicode-org.atlassian.net)
 - PORT (for example, 3000)
 - GITHUB_TOKEN (created from your account)
-- GITHUB_OWNER (for example, unicode-org)
-- GITHUB_REPO (for example, icu)
