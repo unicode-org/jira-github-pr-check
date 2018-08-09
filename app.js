@@ -37,6 +37,8 @@ const app = express()
 		}
 	});
 
-module.exports = (req, res) => {
-	return app(req, res);
+module.exports = {
+	app: (req, res) => {
+		return app(req, res);
+	}
 };

@@ -8,6 +8,6 @@ require("dotenv").config();
 const app = require("./app");
 const http = require("http");
 
-const server = http.createServer(app);
+const server = http.createServer(app.app);
 server.listen(process.env.PORT);
 console.log("Listening on port", process.env.PORT);
