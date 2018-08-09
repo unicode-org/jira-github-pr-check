@@ -1,0 +1,21 @@
+{
+  "name": "jira-github-pr-check",
+  "version": "1.0.0",
+  "description": "Checks GitHub pull requests for valid and accepted Jira tickets.",
+  "main": "app.js",
+  "scripts": {
+    "lint": "eslint ."
+  },
+  "author": "Shane F. Carr",
+  "license": "Unicode",
+  "dependencies": {
+    "@octokit/rest": "^15.9.5",
+    "body-parser": "^1.18.3",
+    "dotenv": "^6.0.0",
+    "express": "^4.16.3",
+    "jira-connector": "^2.8.0"
+  },
+  "devDependencies": {
+    "eslint": "^5.3.0"
+  }
+}
