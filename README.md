@@ -5,6 +5,14 @@ A small webhook service that forces GitHub pull requests to have a valid, accept
 
 This is designed to be able to be run as a GCP Cloud Function.
 
+## Quick Start
+
+To run as a server locally on the port given in the environment variable:
+
+	$ node server.js
+
+Use the app.js endpoint for GCP Cloud Functions.
+
 ## Environment
 
 The following environment variables are expected.  If a `.env` file is present, they will be read from there:
