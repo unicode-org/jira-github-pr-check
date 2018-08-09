@@ -19,4 +19,5 @@ The following environment variables are expected.  If a `.env` file is present, 
 
 - JIRA_URL (for example, unicode-org.atlassian.net)
 - PORT (for example, 3000)
-- GITHUB_TOKEN (created from your account)
+- either GITHUB_TOKEN (created from your account)
+- or GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET

@@ -5,10 +5,18 @@
 
 const octokit = require("@octokit/rest")();
 
-octokit.authenticate({
-	type: "token",
-	token: process.env.GITHUB_TOKEN
-});
+if (process.env.GITHUB_TOKEN) {
+	octokit.authenticate({
+		type: "token",
+		token: process.env.GITHUB_TOKEN
+	});
+} else if (process.env.GITHUB_CLIENT_ID) {
+	octokit.authenticate({
+		type: "oauth",
+		key: process.env.GITHUB_CLIENT_ID,
+		secret: process.env.GITHUB_CLIENT_SECRET
+	});
+}
 
 async function createStatus(pullRequest, pass, targetUrl, description) {
 	const fullName = pullRequest.head.repo.full_name;  // "unicode-org/icu"
