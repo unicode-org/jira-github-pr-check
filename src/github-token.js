@@ -8,7 +8,7 @@ const octokitRest = require("@octokit/rest");
 const path = require("path");
 
 const pemBuffer = process.env.GITHUB_APP_PEM_FILE
-	? require("fs").readFileSync(path.join(__dirname, "..", process.env.GITHUB_APP_PEM_FILE));
+	? require("fs").readFileSync(path.join(__dirname, "..", process.env.GITHUB_APP_PEM_FILE))
 	: Buffer.from(process.env.GITHUB_APP_PEM_BLOB, "base64");
 
 let latestToken = null;
