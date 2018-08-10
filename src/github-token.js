@@ -7,13 +7,22 @@ const jwt = require("jsonwebtoken");
 const octokitRest = require("@octokit/rest");
 const path = require("path");
 
-const pemBuffer = require("fs").readFileSync(path.join(__dirname, "..", process.env.GITHUB_APP_PEM_FILE));
+const pemBuffer = process.env.GITHUB_APP_PEM_FILE
+	? require("fs").readFileSync(path.join(__dirname, "..", process.env.GITHUB_APP_PEM_FILE));
+	: Buffer.from(process.env.GITHUB_APP_PEM_BLOB, "base64");
+
+let latestToken = null;
+let latestTokenExpiration = 0;
 
 async function getNewToken() {
 	const nowTimestamp = parseInt(new Date().valueOf()/1000);
+	if (nowTimestamp + 60 < latestTokenExpiration) {
+		return latestToken;
+	}
+	const expiration = nowTimestamp + 300;
 	const payload = {
 		iat: nowTimestamp,
-		exp: nowTimestamp + 300,
+		exp: expiration,
 		iss: process.env.GITHUB_APP_ID
 	};
 	const jwtToken = await new Promise((resolve, reject) => {
@@ -33,7 +42,10 @@ async function getNewToken() {
 	const result = await octokitJwtClient.apps.createInstallationToken({
 		installation_id: process.env.GITHUB_APP_INSTALLATION_ID
 	});
-	return result.data.token;
+	latestToken = result.data.token;
+	latestTokenExpiration = expiration;
+	console.log("Got new GitHub access token; expires at " + new Date(expiration*1000));
+	return latestToken;
 }
 
 module.exports = {
