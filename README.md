@@ -3,7 +3,7 @@ Jira GitHub PR Checker
 
 A small webhook service that forces GitHub pull requests to have a valid, accepted Jira ticket in the title.
 
-This is designed to be able to be run as a GCP Cloud Function.
+This service can be run on its own, and it is also designed with the capability to run as a GCP Cloud Function.
 
 ## Quick Start
 
@@ -11,7 +11,7 @@ To run as a server locally on the port given in the environment variable:
 
 	$ node server.js
 
-The app.js endpoint is used for GCP Cloud Functions.  Additionally, set "app" as the "Function to execute" in the Cloud Functions settings page.
+If running as a GCP Cloud Function, set "app" as the "Function to execute" in the Cloud Functions settings page.  The server.js file will not be used; GCP will import the library function from app.js directly.
 
 ## Environment
 
