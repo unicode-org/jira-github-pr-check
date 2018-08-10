@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 // © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html#License
 
@@ -5,7 +6,7 @@
 
 require("dotenv").config();
 
-const app = require("./app");
+const app = require("../app");
 const http = require("http");
 
 const server = http.createServer(app.app);

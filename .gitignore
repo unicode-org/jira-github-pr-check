@@ -1,3 +1,5 @@
 .env
 .env.yml
 node_modules/
+inputs/
+keys/

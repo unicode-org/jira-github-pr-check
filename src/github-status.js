@@ -3,36 +3,55 @@
 
 "use strict";
 
-const octokit = require("@octokit/rest")();
+const octokitRest = require("@octokit/rest");
 
-if (process.env.GITHUB_TOKEN) {
-	octokit.authenticate({
-		type: "token",
-		token: process.env.GITHUB_TOKEN
-	});
-} else if (process.env.GITHUB_CLIENT_ID) {
-	octokit.authenticate({
-		type: "oauth",
-		key: process.env.GITHUB_CLIENT_ID,
-		secret: process.env.GITHUB_CLIENT_SECRET
-	});
+async function getAuthenticatedOctokitClient() {
+	if (process.env.GITHUB_TOKEN) {
+		const client = octokitRest();
+		client.authenticate({
+			type: "token",
+			token: process.env.GITHUB_TOKEN
+		});
+		return client;
+	} else if (process.env.GITHUB_APP_ID) {
+		const token = await require("./github-token").getNewToken();
+		const client = octokitRest();
+		client.authenticate({
+			type: "token",
+			token
+		});
+		return client;
+	}
 }
 
 async function createStatus(pullRequest, pass, targetUrl, description) {
-	const fullName = pullRequest.head.repo.full_name;  // "unicode-org/icu"
-	const owner = fullName.split("/")[0];
-	const repo = fullName.substr(owner.length + 1);
-	await octokit.repos.createStatus({
-		owner: owner,
-		repo: repo,
-		sha: pullRequest["head"]["sha"],
-		state: pass ? "success" : "failure",
+	// TODO: Is it possible that pullRequest.base is different from the repository hosting the pull request?
+	const owner = pullRequest.base.repo.owner.login;
+	const repo = pullRequest.base.repo.name;
+	const sha = pullRequest.head.sha;
+	const state = pass ? "success" : "failure";
+	console.log("Setting Status:", owner + "/" + repo, sha, "\"" + description + "\"");
+	const data = {
+		owner,
+		repo,
+		sha,
+		state: state,
 		target_url: targetUrl,
 		description,
 		context: "jira-ticket"
-	});
+	};
+	const client = await getAuthenticatedOctokitClient();
+	await client.repos.createStatus(data);
+}
+
+async function getPullRequest(params) {
+	// params should have keys {owner, repo, number}
+	const client = await getAuthenticatedOctokitClient();
+	const pullRequest = await client.pullRequests.get(params);
+	return pullRequest.data;
 }
 
 module.exports = {
-	createStatus
+	createStatus,
+	getPullRequest
 };
