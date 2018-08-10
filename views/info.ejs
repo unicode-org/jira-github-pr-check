@@ -38,10 +38,10 @@ License & terms of use: http://www.unicode.org/copyright.html#License
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script>
 	function touch() {
-		var path = "/touch/<%= params.owner %>/<%= params.repo %>/<%= params.number %>";
+		var url = "<%= process.env.URL_PREFIX %>/touch/<%= params.owner %>/<%= params.repo %>/<%= params.number %>";
 		$("#touch").hide();
 		$("#working").show();
-		$.post(path, function() {
+		$.post(url, function() {
 			$("#working").hide();
 			$("#done").show();
 		});
