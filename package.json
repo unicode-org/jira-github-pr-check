@@ -7,7 +7,7 @@
     "lint": "eslint ."
   },
   "author": "Shane F. Carr",
-  "license": "Unicode",
+  "license": "Unicode-DFS-2016",
   "dependencies": {
     "@octokit/rest": "^15.9.5",
     "body-parser": "^1.18.3",
