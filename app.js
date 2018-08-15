@@ -23,9 +23,8 @@ async function getJiraInfo(pullRequest) {
 	}
 	const issueKey = match[1];
 	const jiraStatus = await jira.getStatus(issueKey);
-	// TODO: Allow statuses like Reviewing and Review Feedback
-	const pass = (jiraStatus === "Accepted");
-	const description = pass ? "Jira ticket " + issueKey + " is accepted" : jiraStatus === null ? "Jira ticket " + issueKey + " not found" : "Jira ticket " + issueKey + " is not accepted; it has status " + jiraStatus;
+	const pass = (jiraStatus === "Accepted" || jiraStatus === "Reviewing" || jiraStatus === "Review Feedback");
+	const description = pass ? "Jira ticket " + issueKey + " has status " + jiraStatus : jiraStatus === null ? "Jira ticket " + issueKey + " not found" : "Jira ticket " + issueKey + " is not accepted; it has status " + jiraStatus;
 	return { issueKey, jiraStatus, pass, description };
 }
 
