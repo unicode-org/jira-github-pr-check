@@ -51,7 +51,19 @@ async function getPullRequest(params) {
 	return pullRequest.data;
 }
 
+async function getCommits(params) {
+	// params should have keys {owner, repo, number}
+	const client = await getAuthenticatedOctokitClient();
+	// Get max commits per page (100)
+	const newParams = Object.assign({
+		per_page: 100
+	}, params);
+	const commitsResult = await client.pullRequests.getCommits(newParams);
+	return commitsResult.data;
+}
+
 module.exports = {
 	createStatus,
-	getPullRequest
+	getPullRequest,
+	getCommits
 };

@@ -56,6 +56,11 @@ License & terms of use: http://www.unicode.org/copyright.html#License
 
 	<p>Pull request: &ldquo;<%= pullRequest.title %>&rdquo;</p>
 
+	<% if (badCommit) { %>
+	<p><a href="https://github.com/<%= params.owner %>/<%= params.repo %>/pull/<%= params.number %>/commits/<%= badCommit.sha %>">Commit</a> message: &ldquo;<%= badCommit.commit.message %>&rdquo;
+	<p><a href="http://site.icu-project.org/repository/gitdev">More Information</a></p>
+	<% } %>
+
 	<p>Jira status: <%= jiraInfo.jiraStatus || "N/A" %></p>
 
 	<% if (jiraUrl) { %>
