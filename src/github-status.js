@@ -24,13 +24,13 @@ async function getAuthenticatedOctokitClient() {
 	}
 }
 
-async function createStatus(pullRequest, pass, targetUrl, description) {
+async function createStatus(statusid, pullRequest, pass, targetUrl, description) {
 	// TODO: Is it possible that pullRequest.base is different from the repository hosting the pull request?
 	const owner = pullRequest.base.repo.owner.login;
 	const repo = pullRequest.base.repo.name;
 	const sha = pullRequest.head.sha;
 	const state = pass ? "success" : "failure";
-	console.log("Setting Status:", owner + "/" + repo, sha, "\"" + description + "\"");
+	console.log("Setting Status:", statusid, owner + "/" + repo, sha, "\"" + description + "\"");
 	const data = {
 		owner,
 		repo,
@@ -38,7 +38,7 @@ async function createStatus(pullRequest, pass, targetUrl, description) {
 		state: state,
 		target_url: targetUrl,
 		description,
-		context: "jira-ticket"
+		context: statusid
 	};
 	const client = await getAuthenticatedOctokitClient();
 	await client.repos.createStatus(data);

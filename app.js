@@ -39,6 +39,7 @@ async function getJiraInfo(pullRequest) {
 			number: pullRequest.number
 		})
 	]);
+	const numCommits = commits.length;
 
 	// Check Jira ticket for validity
 	if (jiraStatus !== "Accepted" &&
@@ -47,6 +48,7 @@ async function getJiraInfo(pullRequest) {
 		return {
 			issueKey,
 			jiraStatus,
+			numCommits,
 			pass: false,
 			description: jiraStatus === null ?
 				"Jira ticket " + issueKey + " not found" :
@@ -61,6 +63,7 @@ async function getJiraInfo(pullRequest) {
 			return {
 				issueKey,
 				jiraStatus,
+				numCommits,
 				pass: false,
 				description: "Commit message for " + commitInfo.sha.substr(0, 7) + " fails validation",
 				badCommit: commitInfo
@@ -69,6 +72,7 @@ async function getJiraInfo(pullRequest) {
 			return {
 				issueKey,
 				jiraStatus,
+				numCommits,
 				pass: false,
 				description: "Commit " + commitInfo.sha.substr(0, 7) + " is for " + commitIssueKey + ", but the PR is for " + issueKey,
 				badCommit: commitInfo
@@ -81,6 +85,7 @@ async function getJiraInfo(pullRequest) {
 		return {
 			issueKey,
 			jiraStatus,
+			numCommits,
 			pass: false,
 			description: "PR has more than 100 commits; please rebase and squash"
 		};
@@ -90,6 +95,7 @@ async function getJiraInfo(pullRequest) {
 	return {
 		issueKey,
 		jiraStatus,
+		numCommits,
 		pass: true,
 		description: "Jira ticket " + issueKey + " has status " + jiraStatus
 	};
@@ -100,7 +106,12 @@ async function touch(pullRequest, jiraInfo) {
 	const repo = pullRequest.base.repo.name;
 	const number = pullRequest.number;
 	const url = process.env.URL_PREFIX + "/info/" + owner + "/" + repo + "/" + number;
-	await github.createStatus(pullRequest, jiraInfo.pass, url, jiraInfo.description);
+	const multiCommitPass = jiraInfo.numCommits === 1;
+	const multiCommitMessage = (jiraInfo.numCommits === 0) ? "No commits found on PR" : (jiraInfo.numCommits === 1) ? "This PR includes exactly 1 commit!" : "This PR has " + jiraInfo.numCommits + " commits; consider squashing to a single commit.";
+	return Promise.all([
+		github.createStatus("jira-ticket", pullRequest, jiraInfo.pass, url, jiraInfo.description),
+		github.createStatus("single-commit", pullRequest, multiCommitPass, undefined, multiCommitMessage)
+	]);
 }
 
 const app = express()
