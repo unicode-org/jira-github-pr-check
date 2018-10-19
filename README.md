@@ -21,6 +21,11 @@ The following environment variables are expected.  If a `.env` file is present, 
 # Hostname of your Jira instance.
 JIRA_URL=unicode-org.atlassian.net
 
+# Authentication for your Jira instance.
+# If not present, authentication for Jira will not be used.
+JIRA_USERNAME=foo
+JIRA_PASSWORD=bar
+
 # URL prefix used for hyperlinks.
 URL_PREFIX=http://localhost:3000
 
