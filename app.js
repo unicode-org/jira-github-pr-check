@@ -31,7 +31,7 @@ async function getJiraInfo(pullRequest) {
 	}
 
 	// Load additional data from Jira and GitHub
-	const [jiraStatus, commits] = await Promise.all([
+	const [jiraIssue, commits] = await Promise.all([
 		jira.getStatus(issueKey),
 		github.getCommits({
 			owner: pullRequest.base.repo.owner.login,
@@ -39,6 +39,8 @@ async function getJiraInfo(pullRequest) {
 			number: pullRequest.number
 		})
 	]);
+	const jiraStatus = jiraIssue && jiraIssue.fields.status.name;
+	const jiraSummary = jiraIssue && jiraIssue.fields.summary;
 	const numCommits = commits.length;
 
 	// Check Jira ticket for validity
@@ -97,7 +99,7 @@ async function getJiraInfo(pullRequest) {
 		jiraStatus,
 		numCommits,
 		pass: true,
-		description: "Jira ticket " + issueKey + " has status " + jiraStatus
+		description: issueKey + " \u201C" + jiraSummary + "\u201D (status is " + jiraStatus + ")"
 	};
 }
 
@@ -107,7 +109,7 @@ async function touch(pullRequest, jiraInfo) {
 	const number = pullRequest.number;
 	const url = process.env.URL_PREFIX + "/info/" + owner + "/" + repo + "/" + number;
 	const multiCommitPass = jiraInfo.numCommits === 1;
-	const multiCommitMessage = (jiraInfo.numCommits === 0) ? "No commits found on PR" : (jiraInfo.numCommits === 1) ? "This PR includes exactly 1 commit!" : "This PR has " + jiraInfo.numCommits + " commits; consider squashing to a single commit.";
+	const multiCommitMessage = (jiraInfo.numCommits === 0) ? "No commits found on PR" : (jiraInfo.numCommits === 1) ? "This PR includes exactly 1 commit!" : "This PR has " + jiraInfo.numCommits + " commits; consider squashing.";
 	return Promise.all([
 		github.createStatus("jira-ticket", pullRequest, jiraInfo.pass, url, jiraInfo.description),
 		github.createStatus("single-commit", pullRequest, multiCommitPass, undefined, multiCommitMessage)

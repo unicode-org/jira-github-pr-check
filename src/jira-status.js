@@ -27,7 +27,7 @@ async function getStatus(issueKey) {
 			} else if (err) {
 				reject(err);
 			} else if (issue.fields) {
-				resolve(issue.fields.status.name);
+				resolve(issue);
 			} else {
 				resolve(null);
 			}
