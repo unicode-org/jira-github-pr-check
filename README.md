@@ -29,6 +29,9 @@ JIRA_PASSWORD=bar
 # URL prefix used for hyperlinks.
 URL_PREFIX=http://localhost:3000
 
+# Optional URL to your contribution guidelines; produces a link on the info page:
+INSTRUCTIONS_URL=http://site.icu-project.org/processes/contribute
+
 # Port to use when serving.
 # Not required when used in Google Cloud Functions.
 PORT=3000
