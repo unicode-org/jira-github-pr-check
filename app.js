@@ -107,6 +107,11 @@ async function touch(pullRequest, jiraInfo) {
 	const owner = pullRequest.base.repo.owner.login;
 	const repo = pullRequest.base.repo.name;
 	const number = pullRequest.number;
+	const state = pullRequest.state;
+	if (state !== "open") {
+		console.log("Not touching: PR is " + state + ": " + number);
+		return;
+	}
 	const url = process.env.URL_PREFIX + "/info/" + owner + "/" + repo + "/" + number;
 	const multiCommitPass = jiraInfo.numCommits === 1;
 	const multiCommitMessage = (jiraInfo.numCommits === 0) ? "No commits found on PR" : (jiraInfo.numCommits === 1) ? "This PR includes exactly 1 commit!" : "This PR has " + jiraInfo.numCommits + " commits; consider squashing.";
