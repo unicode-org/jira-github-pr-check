@@ -103,6 +103,67 @@ async function getJiraInfo(pullRequest) {
 	};
 }
 
+async function checkForcePush({ before, after }, pullRequest) {
+	const owner = pullRequest.base.repo.owner.login;
+	const repo = pullRequest.base.repo.name;
+	// Check to see if this was a force push
+	const compRes = await github.getCommitDiff({ owner, repo, base: before, head: after });
+	if (compRes.status !== "diverged") {
+		// Not a force push
+		console.log("Push to branch status:", compRes.status);
+		return;
+	}
+	const base = pullRequest.base.sha;
+	const number = pullRequest.number;
+	const [ beforeRes, afterRes ] = await Promise.all([
+		github.getCommitDiff({ owner, repo, base, head: before }),
+		github.getCommitDiff({ owner, repo, base, head: after })
+	]);
+	const compareFilename = (a, b) => {
+		if (!a) return 1;
+		if (!b) return -1;
+		return a.filename.localeCompare(b.filename)
+	};
+	const beforeFiles = beforeRes.files.slice().sort(compareFilename);
+	const afterFiles = afterRes.files.slice().sort(compareFilename);
+	const errors = [];
+	for (let i=0, j=0; i < beforeFiles.length || j < afterFiles.length; i++, j++) {
+		let file1 = beforeFiles[i] || {};
+		let file2 = afterFiles[j] || {};
+		if (file1.filename === file2.filename && file1.sha === file2.sha) {
+			continue;
+		}
+		if (file1.filename === file2.filename) {
+			errors.push(file1.filename + " is different");
+			continue;
+		}
+		if (compareFilename(file1, file2) < 0) {
+			// file1 is earlier
+			errors.push(file1.filename + " is no longer changed in the branch");
+			j--; // re-evaluate file2
+		} else {
+			// file2 is earlier
+			errors.push(file2.filename + " is now changed in the branch");
+			i--; // re-evaluate file1
+		}
+	}
+	let body;
+	if (errors.length) {
+		body = "Notice: the branch changed across the force-push!\n\n";
+		errors.forEach((error) => {
+			body += "- " + error + "\n";
+		});
+		const humanDiffUrl = `https://github.com/${owner}/${repo}/compare/${owner}:${before.substr(0, 7)}..${owner}:${after.substr(0, 7)}`;
+		body += "\n[View Diff Across Force-Push](" + humanDiffUrl + ")";
+		console.log(`Force-Push has diffs: ${owner}/${repo} ${before} ${after}`);
+	} else {
+		body = "Hooray! The files in the branch are the same across the force-push. 😃";
+		console.log(`Force-Push has no file diffs: ${owner}/${repo} ${before} ${after}`);
+	}
+	body += "\n\n~ Your Friendly Jira-GitHub PR Checker Bot";
+	return github.postComment({ owner, repo, number, body });
+}
+
 async function touch(pullRequest, jiraInfo) {
 	const owner = pullRequest.base.repo.owner.login;
 	const repo = pullRequest.base.repo.name;
@@ -165,6 +226,10 @@ const app = express()
 	.post("/hook", async (req, res) => {
 		try {
 			const pullRequest = req.body.pull_request;
+			// Check for push event
+			if (req.body.action === "synchronize") {
+				await checkForcePush(req.body, pullRequest);
+			}
 			const jiraInfo = await getJiraInfo(pullRequest);
 			await touch(pullRequest, jiraInfo);
 			return res.sendStatus(204);

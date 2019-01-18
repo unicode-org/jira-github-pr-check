@@ -47,8 +47,22 @@ async function createStatus(statusid, pullRequest, pass, targetUrl, description)
 async function getPullRequest(params) {
 	// params should have keys {owner, repo, number}
 	const client = await getAuthenticatedOctokitClient();
-	const pullRequest = await client.pullRequests.get(params);
+	const pullRequest = await client.pulls.get(params);
 	return pullRequest.data;
+}
+
+async function getCommitDiff(params, base, head) {
+	// params should have keys {owner, repo, base, head}
+	const client = await getAuthenticatedOctokitClient();
+	const reviews = await client.repos.compareCommits(params);
+	return reviews.data;
+}
+
+async function postComment(params) {
+	// params should have keys {owner, repo, number, body}
+	const client = await getAuthenticatedOctokitClient();
+	// Note: pull request comments are handled via the issues API
+	return client.issues.createComment(params);
 }
 
 async function getCommits(params) {
@@ -58,12 +72,14 @@ async function getCommits(params) {
 	const newParams = Object.assign({
 		per_page: 100
 	}, params);
-	const commitsResult = await client.pullRequests.getCommits(newParams);
+	const commitsResult = await client.pulls.listCommits(newParams);
 	return commitsResult.data;
 }
 
 module.exports = {
 	createStatus,
 	getPullRequest,
+	getCommitDiff,
+	postComment,
 	getCommits
 };

@@ -4,8 +4,8 @@
   "description": "Checks GitHub pull requests for valid and accepted Jira tickets.",
   "main": "app.js",
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/unicode-org/jira-github-pr-check"
+    "type": "git",
+    "url": "https://github.com/unicode-org/jira-github-pr-check"
   },
   "scripts": {
     "lint": "eslint ."
@@ -13,17 +13,17 @@
   "author": "Shane F. Carr",
   "license": "Unicode-DFS-2016",
   "dependencies": {
-    "@octokit/rest": "^15.9.5",
+    "@octokit/rest": "^16.10.0",
     "body-parser": "^1.18.3",
-    "dotenv": "^6.0.0",
+    "dotenv": "^6.2.0",
     "ejs": "^2.6.1",
-    "express": "^4.16.3",
-    "jira-connector": "^2.8.0",
-    "jsonwebtoken": "^8.3.0",
-    "morgan": "^1.9.0"
+    "express": "^4.16.4",
+    "jira-connector": "^2.10.0",
+    "jsonwebtoken": "^8.4.0",
+    "morgan": "^1.9.1"
   },
   "devDependencies": {
-    "eslint": "^5.3.0",
-    "yargs": "^12.0.2"
+    "eslint": "^5.12.1",
+    "yargs": "^12.0.5"
   }
 }
