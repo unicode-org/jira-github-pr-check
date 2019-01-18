@@ -134,7 +134,9 @@ const app = express()
 				pullRequest,
 				jiraInfo,
 				jiraUrl: jiraInfo.issueKey ? jira.getUrl(jiraInfo.issueKey) : undefined,
-				badCommit: jiraInfo.badCommit
+				badCommit: jiraInfo.badCommit,
+				checkerGithubUrl: require("./package.json").repository.url,
+				instructionsUrl: process.env.INSTRUCTIONS_URL
 			});
 		} catch (err) {
 			if (err.code) {

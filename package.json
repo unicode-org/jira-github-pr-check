@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Checks GitHub pull requests for valid and accepted Jira tickets.",
   "main": "app.js",
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/unicode-org/jira-github-pr-check"
+  },
   "scripts": {
     "lint": "eslint ."
   },

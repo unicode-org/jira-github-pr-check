@@ -22,17 +22,24 @@ License & terms of use: http://www.unicode.org/copyright.html#License
 		background-color: #FFF;
 		margin: 0;
 		padding: 10px;
+		position: relative;
 	}
 	.verdict {
 		font-weight: bold;
 		font-size: 2em;
 		color: <%= color %>;
+		padding: 0 50px;
 	}
 	.touch-btn {
 		cursor: pointer;
 	}
 	.progress {
 		height: 50px;
+	}
+	#fork-me {
+		position: absolute;
+		top: 0;
+		right: 0;
 	}
 </style>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -50,7 +57,13 @@ License & terms of use: http://www.unicode.org/copyright.html#License
 </head>
 <body><div id="main">
 
+	<a href="<%= checkerGithubUrl %>" id="fork-me"><img width="149" height="149" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png?resize=149%2C149" alt="Fork me on GitHub" data-recalc-dims="1"></a>
+
 	<p class="verdict"><%= jiraInfo.description %></p>
+
+	<% if (instructionsUrl) { %>
+	<p><em><a href="<%= instructionsUrl %>">Read our contribution guidelines</a></em></p>
+	<% } %>
 
 	<hr/>
 
