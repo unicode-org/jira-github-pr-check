@@ -4,6 +4,7 @@
 "use strict";
 
 const bodyParser = require("body-parser");
+const crypto = require("crypto");
 const express = require("express");
 const morgan = require("morgan");
 
@@ -183,7 +184,17 @@ async function touch(pullRequest, jiraInfo) {
 }
 
 const app = express()
-	.use(bodyParser.json())
+	.use(bodyParser.json({
+		verify: (req, res, body, encoding) => {
+			// Compute and save the hash of the raw body
+			const key = process.env.GITHUB_WEBHOOK_SECRET;
+			if (key) {
+				const hash = crypto.createHmac("sha1", key);
+				hash.update(body);
+				req.bodyDigest = hash.digest("hex");
+			}
+		}
+	}))
 	.use(bodyParser.urlencoded({ extended: false }))
 	.use(morgan("tiny"))
 	.get("/info/:owner/:repo/:number", async (req, res) => {
@@ -224,6 +235,14 @@ const app = express()
 		}
 	})
 	.post("/hook", async (req, res) => {
+		if (req.bodyDigest) {
+			const expectedSignature = "sha1=" + req.bodyDigest;
+			const actualSignature = req.get("X-Hub-Signature");
+			if (expectedSignature !== actualSignature) {
+				console.log("Notice: Ignoring webhook request with bad signature: expected " + expectedSignature + "; got " + actualSignature);
+				return res.sendStatus(403);
+			}
+		}
 		try {
 			const pullRequest = req.body.pull_request;
 			// Check for push event

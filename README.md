@@ -36,6 +36,9 @@ INSTRUCTIONS_URL=http://site.icu-project.org/processes/contribute
 # Not required when used in Google Cloud Functions.
 PORT=3000
 
+# Optional GitHub secret; save the secret here and in the "secret" field when configuring the GitHub webhook:
+GITHUB_WEBHOOK_SECRET=xxxxxxxxxx
+
 # GitHub permissions:
 
 # Option 1: Personal Access Token; easiest and useful for testing.
