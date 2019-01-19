@@ -253,10 +253,10 @@ const app = express()
 			await touch(pullRequest, jiraInfo);
 			return res.sendStatus(204);
 		} catch (err) {
-			if (err.code) {
-				return res.sendStatus(err.code);
+			console.error("Error when processing request:", err);
+			if (err.status) {
+				return res.sendStatus(err.status);
 			} else {
-				console.error(err);
 				return res.sendStatus(500);
 			}
 		}
