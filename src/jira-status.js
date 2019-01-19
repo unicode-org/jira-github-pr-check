@@ -3,8 +3,9 @@
 
 "use strict";
 
+let jira;
 if (process.env.JIRA_USERNAME && process.env.JIRA_PASSWORD) {
-	var jira = new (require("jira-connector"))({
+	jira = new (require("jira-connector"))({
 		host: process.env.JIRA_URL,
 		basic_auth: {
 			username: process.env.JIRA_USERNAME,
@@ -12,7 +13,7 @@ if (process.env.JIRA_USERNAME && process.env.JIRA_PASSWORD) {
 		}
 	});
 } else {
-	var jira = new (require("jira-connector"))({
+	jira = new (require("jira-connector"))({
 		host: process.env.JIRA_URL,
 	});
 }

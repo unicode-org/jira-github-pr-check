@@ -51,7 +51,7 @@ async function getPullRequest(params) {
 	return pullRequest.data;
 }
 
-async function getCommitDiff(params, base, head) {
+async function getCommitDiff(params) {
 	// params should have keys {owner, repo, base, head}
 	const client = await getAuthenticatedOctokitClient();
 	const reviews = await client.repos.compareCommits(params);

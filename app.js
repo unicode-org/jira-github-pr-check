@@ -123,7 +123,7 @@ async function checkForcePush({ before, after }, pullRequest) {
 	const compareFilename = (a, b) => {
 		if (!a) return 1;
 		if (!b) return -1;
-		return a.filename.localeCompare(b.filename)
+		return a.filename.localeCompare(b.filename);
 	};
 	const beforeFiles = beforeRes.files.slice().sort(compareFilename);
 	const afterFiles = afterRes.files.slice().sort(compareFilename);
@@ -185,7 +185,7 @@ async function touch(pullRequest, jiraInfo) {
 
 const app = express()
 	.use(bodyParser.json({
-		verify: (req, res, body, encoding) => {
+		verify: (req, res, body /*, encoding*/) => {
 			// Compute and save the hash of the raw body
 			const key = process.env.GITHUB_WEBHOOK_SECRET;
 			if (key) {
