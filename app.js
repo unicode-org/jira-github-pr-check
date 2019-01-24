@@ -121,8 +121,8 @@ async function checkForcePush({ before, after }, pullRequest) {
 		github.getCommitDiff({ owner, repo, base, head: after })
 	]);
 	const compareFilename = (a, b) => {
-		if (!a) return 1;
-		if (!b) return -1;
+		if (!a.filename) return 1;
+		if (!b.filename) return -1;
 		return a.filename.localeCompare(b.filename);
 	};
 	const beforeFiles = beforeRes.files.slice().sort(compareFilename);
