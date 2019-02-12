@@ -37,7 +37,8 @@ async function createStatus(statusid, pullRequest, pass, targetUrl, description)
 		sha,
 		state: state,
 		target_url: targetUrl,
-		description,
+		// See issue #7: descriptions are limited to 140 characters
+		description: description.substr(0, 130),
 		context: statusid
 	};
 	const client = await getAuthenticatedOctokitClient();
