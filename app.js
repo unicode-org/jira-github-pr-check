@@ -12,6 +12,7 @@ const github = require("./src/github-status");
 const jira = require("./src/jira-status");
 
 const JIRA_COMMIT_PATTERN = /^([A-Z]+-\d+)\u0020\w/;
+const PR_BODY_VAR_PATTERN = /^([A-Z_]+)=(.*)$/gm;
 
 function parseMessage(message) {
 	const match = JIRA_COMMIT_PATTERN.exec(message);
@@ -21,7 +22,27 @@ function parseMessage(message) {
 	return match[1];
 }
 
+function parsePullRequestFlags(body) {
+	PR_BODY_VAR_PATTERN.lastIndex = 0; // reset /g regex
+	let prFlags = {};
+	let match;
+	while (match = PR_BODY_VAR_PATTERN.exec(body)) {
+		let value = match[2];
+		if (value === "true") {
+			value = true;
+		} else if (value === "false") {
+			value = false;
+		} else if (parseFloat(value) != NaN) {
+			value = parseFloat(value);
+		}
+		prFlags[match[1]] = value;
+	}
+	return prFlags;
+}
+
 async function getJiraInfo(pullRequest) {
+	const prFlags = parsePullRequestFlags(pullRequest.body);
+	console.log(prFlags);
 	const issueKey = parseMessage(pullRequest.title);
 	if (!issueKey) {
 		return {
@@ -71,13 +92,13 @@ async function getJiraInfo(pullRequest) {
 				description: "Commit message for " + commitInfo.sha.substr(0, 7) + " fails validation",
 				badCommit: commitInfo
 			};
-		} else if (commitIssueKey !== issueKey) {
+		} else if (commitIssueKey !== issueKey && !prFlags["DISABLE_JIRA_ISSUE_MATCH"]) {
 			return {
 				issueKey,
 				jiraStatus,
 				numCommits,
 				pass: false,
-				description: "Commit " + commitInfo.sha.substr(0, 7) + " is for " + commitIssueKey + ", but the PR is for " + issueKey,
+				description: "Commit " + commitInfo.sha.substr(0, 7) + " is for " + commitIssueKey + ", but the PR is for " + issueKey + "; to disable, set DISABLE_JIRA_ISSUE_MATCH=true in the PR description",
 				badCommit: commitInfo
 			};
 		}
