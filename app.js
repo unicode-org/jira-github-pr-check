@@ -42,7 +42,6 @@ function parsePullRequestFlags(body) {
 
 async function getJiraInfo(pullRequest) {
 	const prFlags = parsePullRequestFlags(pullRequest.body);
-	console.log(prFlags);
 	const issueKey = parseMessage(pullRequest.title);
 	if (!issueKey) {
 		return {
