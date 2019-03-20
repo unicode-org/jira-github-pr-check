@@ -12,7 +12,7 @@ const github = require("./src/github-status");
 const jira = require("./src/jira-status");
 
 const JIRA_COMMIT_PATTERN = /^([A-Z]+-\d+)\u0020\w/;
-const PR_BODY_VAR_PATTERN = /^([A-Z_]+)=(.*)$/gm;
+const PR_BODY_VAR_PATTERN = /^([A-Z_]+)=(.*?)(\s*#.*)?$/gm;
 
 function parseMessage(message) {
 	const match = JIRA_COMMIT_PATTERN.exec(message);
