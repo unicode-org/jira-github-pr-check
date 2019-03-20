@@ -63,6 +63,9 @@ async function getJiraInfo(pullRequest) {
 	const jiraStatus = jiraIssue && jiraIssue.fields.status.name;
 	const jiraSummary = jiraIssue && jiraIssue.fields.summary;
 	const numCommits = commits.length;
+	const isMaintMerge = (pullRequest.base.ref === "master"
+		&& pullRequest.head.ref.match(/^maint\//)
+		&& pullRequest.base.repo.full_name == pullRequest.head.repo.full_name);
 
 	// Check Jira ticket for validity
 	if (jiraStatus !== "Accepted" &&
@@ -72,6 +75,7 @@ async function getJiraInfo(pullRequest) {
 			issueKey,
 			jiraStatus,
 			numCommits,
+			isMaintMerge,
 			pass: false,
 			description: jiraStatus === null ?
 				"Jira ticket " + issueKey + " not found" :
@@ -87,15 +91,17 @@ async function getJiraInfo(pullRequest) {
 				issueKey,
 				jiraStatus,
 				numCommits,
+				isMaintMerge,
 				pass: false,
 				description: "Commit message for " + commitInfo.sha.substr(0, 7) + " fails validation",
 				badCommit: commitInfo
 			};
-		} else if (commitIssueKey !== issueKey && !prFlags["DISABLE_JIRA_ISSUE_MATCH"]) {
+		} else if (commitIssueKey !== issueKey && !prFlags["DISABLE_JIRA_ISSUE_MATCH"] && !isMaintMerge) {
 			return {
 				issueKey,
 				jiraStatus,
 				numCommits,
+				isMaintMerge,
 				pass: false,
 				description: "Commit " + commitInfo.sha.substr(0, 7) + " is for " + commitIssueKey + ", but the PR is for " + issueKey + "; to disable, set DISABLE_JIRA_ISSUE_MATCH=true in the PR description",
 				badCommit: commitInfo
@@ -109,6 +115,7 @@ async function getJiraInfo(pullRequest) {
 			issueKey,
 			jiraStatus,
 			numCommits,
+			isMaintMerge,
 			pass: false,
 			description: "PR has more than 100 commits; please rebase and squash"
 		};
@@ -119,6 +126,7 @@ async function getJiraInfo(pullRequest) {
 		issueKey,
 		jiraStatus,
 		numCommits,
+		isMaintMerge,
 		pass: true,
 		description: issueKey + " \u201C" + jiraSummary + "\u201D (status is " + jiraStatus + ")"
 	};
@@ -195,12 +203,17 @@ async function touch(pullRequest, jiraInfo) {
 		return;
 	}
 	const url = process.env.URL_PREFIX + "/info/" + owner + "/" + repo + "/" + number;
-	const multiCommitPass = jiraInfo.numCommits === 1;
-	const multiCommitMessage = (jiraInfo.numCommits === 0) ? "No commits found on PR" : (jiraInfo.numCommits === 1) ? "This PR includes exactly 1 commit!" : "This PR has " + jiraInfo.numCommits + " commits; consider squashing.";
-	return Promise.all([
+	const multiCommitPass = jiraInfo.numCommits === 1
+		|| (jiraInfo.numCommits > 1 && jiraInfo.isMaintMerge);
+	const multiCommitMessage = (jiraInfo.numCommits === 0) ? "No commits found on PR" : (jiraInfo.numCommits === 1) ? "This PR includes exactly 1 commit!" : "This PR has " + jiraInfo.numCommits + " commits" + (jiraInfo.isMaintMerge ? "" : "; consider squashing.");
+	const promises = [
 		github.createStatus("jira-ticket", pullRequest, jiraInfo.pass, url, jiraInfo.description),
 		github.createStatus("single-commit", pullRequest, multiCommitPass, undefined, multiCommitMessage)
-	]);
+	];
+	if (jiraInfo.isMaintMerge) {
+		promises.push(github.createStatus("maint-merge", pullRequest, false, undefined, "Reminder: use a MERGE COMMIT and new ticket in the message."));
+	}
+	return Promise.all(promises);
 }
 
 const app = express()
