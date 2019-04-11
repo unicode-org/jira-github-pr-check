@@ -13,6 +13,18 @@ To run as a server locally on the port given in the environment variable:
 
 If running as a GCP Cloud Function, set "app" as the "Function to execute" in the Cloud Functions settings page.  The server.js file will not be used; GCP will import the library function from app.js directly.
 
+## PR Flags
+
+The following "variables" can be set in the pull request body to change the behavior of the checker.
+
+```
+// Allow commits with mixed issue tags
+DISABLE_JIRA_ISSUE_MATCH=true
+
+// Allow multiple commits in the same PR
+ALLOW_MANY_COMMITS=true
+```
+
 ## Environment
 
 The following environment variables are expected.  If a `.env` file is present, they will be read from there:

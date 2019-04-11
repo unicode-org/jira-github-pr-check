@@ -46,6 +46,7 @@ async function getJiraInfo(pullRequest) {
 	if (!issueKey) {
 		return {
 			issueKey: null,
+			prFlags,
 			pass: false,
 			description: "Pull request title must start with a Jira ticket ID"
 		};
@@ -76,6 +77,7 @@ async function getJiraInfo(pullRequest) {
 			jiraStatus,
 			numCommits,
 			isMaintMerge,
+			prFlags,
 			pass: false,
 			description: jiraStatus === null ?
 				"Jira ticket " + issueKey + " not found" :
@@ -92,6 +94,7 @@ async function getJiraInfo(pullRequest) {
 				jiraStatus,
 				numCommits,
 				isMaintMerge,
+				prFlags,
 				pass: false,
 				description: "Commit message for " + commitInfo.sha.substr(0, 7) + " fails validation",
 				badCommit: commitInfo
@@ -102,6 +105,7 @@ async function getJiraInfo(pullRequest) {
 				jiraStatus,
 				numCommits,
 				isMaintMerge,
+				prFlags,
 				pass: false,
 				description: "Commit " + commitInfo.sha.substr(0, 7) + " is for " + commitIssueKey + ", but the PR is for " + issueKey + "; to disable, set DISABLE_JIRA_ISSUE_MATCH=true in the PR description",
 				badCommit: commitInfo
@@ -116,6 +120,7 @@ async function getJiraInfo(pullRequest) {
 			jiraStatus,
 			numCommits,
 			isMaintMerge,
+			prFlags,
 			pass: false,
 			description: "PR has more than 100 commits; please rebase and squash"
 		};
@@ -127,6 +132,7 @@ async function getJiraInfo(pullRequest) {
 		jiraStatus,
 		numCommits,
 		isMaintMerge,
+		prFlags,
 		pass: true,
 		description: issueKey + " \u201C" + jiraSummary + "\u201D (status is " + jiraStatus + ")"
 	};
@@ -204,8 +210,8 @@ async function touch(pullRequest, jiraInfo) {
 	}
 	const url = process.env.URL_PREFIX + "/info/" + owner + "/" + repo + "/" + number;
 	const multiCommitPass = jiraInfo.numCommits === 1
-		|| (jiraInfo.numCommits > 1 && jiraInfo.isMaintMerge);
-	const multiCommitMessage = (jiraInfo.numCommits === 0) ? "No commits found on PR" : (jiraInfo.numCommits === 1) ? "This PR includes exactly 1 commit!" : "This PR has " + jiraInfo.numCommits + " commits" + (jiraInfo.isMaintMerge ? "" : "; consider squashing.");
+		|| (jiraInfo.numCommits > 1 && (jiraInfo.isMaintMerge || jiraInfo.prFlags["ALLOW_MANY_COMMITS"]));
+	const multiCommitMessage = (jiraInfo.numCommits === 0) ? "No commits found on PR" : (jiraInfo.numCommits === 1) ? "This PR includes exactly 1 commit!" : "This PR has " + jiraInfo.numCommits + " commits" + (multiCommitPass ? "" : "; consider squashing.");
 	const promises = [
 		github.createStatus("jira-ticket", pullRequest, jiraInfo.pass, url, jiraInfo.description),
 		github.createStatus("single-commit", pullRequest, multiCommitPass, undefined, multiCommitMessage)
