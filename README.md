@@ -35,7 +35,10 @@ JIRA_URL=unicode-org.atlassian.net
 
 # Authentication for your Jira instance.
 # If not present, authentication for Jira will not be used.
-JIRA_USERNAME=foo
+#
+# JIRA_USERNAME should be an *email address*, and JIRA_PASSWORD should be an
+# API token generated at https://id.atlassian.com/manage/api-tokens
+JIRA_USERNAME=foo@example.com
 JIRA_PASSWORD=bar
 
 # URL prefix used for hyperlinks.
