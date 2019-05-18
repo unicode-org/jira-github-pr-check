@@ -26,13 +26,14 @@ function parsePullRequestFlags(body) {
 	PR_BODY_VAR_PATTERN.lastIndex = 0; // reset /g regex
 	let prFlags = {};
 	let match;
+	// eslint-disable-next-line no-cond-assign
 	while (match = PR_BODY_VAR_PATTERN.exec(body)) {
 		let value = match[2];
 		if (value === "true") {
 			value = true;
 		} else if (value === "false") {
 			value = false;
-		} else if (parseFloat(value) != NaN) {
+		} else if (!isNaN(parseFloat(value))) {
 			value = parseFloat(value);
 		}
 		prFlags[match[1]] = value;
@@ -222,6 +223,29 @@ async function touch(pullRequest, jiraInfo) {
 	return Promise.all(promises);
 }
 
+async function squash(params, pullRequest) {
+	const owner = pullRequest.head.repo.owner.login;
+	const repo = pullRequest.head.repo.name;
+	const ref = "heads/" + pullRequest.head.ref;
+	const parentSha = pullRequest.base.sha;
+	const headSha = pullRequest.head.sha;
+	const message = params.title + "\n\n" + params.description;
+	const commitData = await github.writeSquashCommit({
+		owner,
+		repo,
+		parentSha,
+		headSha,
+		message
+	});
+	await github.writeBranch({
+		owner,
+		repo,
+		ref,
+		sha: commitData.sha,
+		force: true
+	});
+}
+
 const app = express()
 	.use(bodyParser.json({
 		verify: (req, res, body /*, encoding*/) => {
@@ -266,6 +290,43 @@ const app = express()
 			return res.sendStatus(204);
 		} catch (err) {
 			if (err.code) {
+				return res.sendStatus(err.code);
+			} else {
+				console.error(err);
+				return res.sendStatus(500);
+			}
+		}
+	})
+	.get("/squash/:owner/:repo/:number", async (req, res) => {
+		try {
+			const pullRequest = await github.getPullRequest(req.params);
+			const jiraInfo = await getJiraInfo(pullRequest);
+			return res.render("squash.ejs", {
+				params: req.params,
+				pullRequest,
+				jiraInfo,
+				checkerGithubUrl: require("./package.json").repository.url,
+			});
+		} catch (err) {
+			if (err.code) {
+				return res.sendStatus(err.code);
+			} else {
+				console.error(err);
+				return res.sendStatus(500);
+			}
+		}
+	})
+	.post("/do-squash", async (req, res) => {
+		try {
+			if (!req.body.confirm) {
+				return res.status(422).send("Please check the confirmation box!");
+			}
+			const pullRequest = await github.getPullRequest(req.body);
+			await squash(req.body, pullRequest);
+			return res.redirect(process.env.URL_PREFIX + "/info/" + req.body.owner + "/" + req.body.repo + "/" + req.body.number);
+		} catch (err) {
+			if (err.code) {
+				console.error(err);
 				return res.sendStatus(err.code);
 			} else {
 				console.error(err);

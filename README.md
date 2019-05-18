@@ -9,7 +9,7 @@ This service can be run on its own, and it is also designed with the capability 
 
 To run as a server locally on the port given in the environment variable:
 
-	$ node server.js
+	$ node bin/server.js
 
 If running as a GCP Cloud Function, set "app" as the "Function to execute" in the Cloud Functions settings page.  The server.js file will not be used; GCP will import the library function from app.js directly.
 
@@ -53,6 +53,11 @@ PORT=3000
 
 # Optional GitHub secret; save the secret here and in the "secret" field when configuring the GitHub webhook:
 GITHUB_WEBHOOK_SECRET=xxxxxxxxxx
+
+# Committer name and email, used for squash commits.
+# By default, use author as committer.
+COMMITTER_NAME=Squash Bot
+COMMITTER_EMAIL=foo@example.com
 
 # GitHub permissions:
 

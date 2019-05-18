@@ -77,10 +77,46 @@ async function getCommits(params) {
 	return commitsResult.data;
 }
 
+async function writeSquashCommit({ owner, repo, parentSha, headSha, message }) {
+	const client = await getAuthenticatedOctokitClient();
+	const commitData1 = await client.git.getCommit({
+		owner,
+		repo,
+		commit_sha: headSha
+	});
+	// Copy the author to the committer, and set the date to today
+	const committer = Object.assign({}, commitData1.data.author);
+	committer.date = new Date().toISOString();
+	// Optionally set the name and email by env variables
+	if (process.env.COMMITTER_NAME && process.env.COMMITTER_EMAIL) {
+		committer.name = process.env.COMMITTER_NAME;
+		committer.email = process.env.COMMITTER_EMAIL;
+	}
+	const commitData2 = await client.git.createCommit({
+		owner,
+		repo,
+		message,
+		tree: commitData1.data.tree.sha,
+		parents: [parentSha],
+		author: commitData1.data.author,
+		committer
+	});
+	return commitData2.data;
+}
+
+async function writeBranch(params) {
+	// params should have keys {owner, repo, ref, sha, force}
+	const client = await getAuthenticatedOctokitClient();
+	const refData = await client.git.updateRef(params);
+	return refData.data;
+}
+
 module.exports = {
 	createStatus,
 	getPullRequest,
 	getCommitDiff,
 	postComment,
-	getCommits
+	getCommits,
+	writeSquashCommit,
+	writeBranch
 };

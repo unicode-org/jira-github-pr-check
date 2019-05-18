@@ -7,12 +7,9 @@ License & terms of use: http://www.unicode.org/copyright.html#License
 	<meta charset="utf-8"/>
 	<title>GitHub/Jira Check <%= jiraInfo.issueKey ? ":" + jiraInfo.issueKey : "" %></title>
 	<style type="text/css">
-	<%
-	var color = jiraInfo.pass ? "#49AB4D" : "#D13B3B";
-	%>
 	body {
 		max-width: 760px;
-		background-color: <%= color %>;
+		background-color: #666;
 		margin: 0 auto;
 		padding: 0;
 		font: 16px/1.3 Verdana, sans-serif; /* default font */
@@ -24,16 +21,17 @@ License & terms of use: http://www.unicode.org/copyright.html#License
 		padding: 10px;
 		position: relative;
 	}
-	.verdict {
-		font-weight: bold;
-		font-size: 2em;
-		color: <%= color %>;
-		padding: 0 50px;
+	#title-input {
+		display: inline-block;
+		font-size: 1.2em;
+		width: 80%;
 	}
-	.touch-btn {
-		cursor: pointer;
+	#description-input {
+		display: inline-block;
+		font-size: 1.2em;
+		width: 80%;
 	}
-	.progress {
+	#working {
 		height: 50px;
 	}
 	#fork-me {
@@ -44,43 +42,44 @@ License & terms of use: http://www.unicode.org/copyright.html#License
 </style>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script>
-	function touch() {
-		var url = "<%= process.env.URL_PREFIX %>/touch/<%= params.owner %>/<%= params.repo %>/<%= params.number %>";
-		$("#touch").hide();
+$(function() {
+	$("#title-input").on("keyup", function() {
+		$("#title-char-count").text($("#title-input").val().length);
+	});
+	$("#form").on("submit", function() {
+		$("#submit-btn").hide();
 		$("#working").show();
-		$.post(url, function() {
-			$("#working").hide();
-			$("#done").show();
-		});
-	}
+	});
+});
 </script>
 </head>
 <body><div id="main">
 
 	<a href="<%= checkerGithubUrl %>" id="fork-me"><img width="149" height="149" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png?resize=149%2C149" alt="Fork me on GitHub" data-recalc-dims="1"></a>
 
-	<p class="verdict"><%= jiraInfo.description %></p>
+	<h2>Commit Squash UI</h2>
 
-	<% if (instructionsUrl) { %>
-	<p><em><a href="<%= instructionsUrl %>">Read our contribution guidelines</a></em></p>
-	<% } %>
+	<p><em>Use this form to squash the commits in your branch into a single commit.</em></p>
 
-	<hr/>
-
-	<p>Pull request: &ldquo;<%= pullRequest.title %>&rdquo;</p>
-
-	<% if (badCommit) { %>
-	<p><a href="https://github.com/<%= params.owner %>/<%= params.repo %>/pull/<%= params.number %>/commits/<%= badCommit.sha %>">Commit</a> message: &ldquo;<%= badCommit.commit.message %>&rdquo;
-	<p><a href="http://site.icu-project.org/repository/gitdev">More Information</a></p>
-	<% } %>
-
-	<p>Jira status: <%= jiraInfo.jiraStatus || "N/A" %></p>
-
-	<% if (jiraUrl) { %>
-	<p><a href="<%= jiraUrl %>">Jira Link</a></p>
-	<% } %>
-
-	<p id="touch" class="progress"><button class="touch-btn" onclick="touch()">Update GitHub Status</button></p>
+	<form method="POST" action="<%= process.env.URL_PREFIX %>/do-squash %>" id="form">
+		<input type="hidden" name="owner" value="<%= params.owner %>" />
+		<input type="hidden" name="repo" value="<%= params.repo %>" />
+		<input type="hidden" name="number" value="<%= params.number %>" />
+		<p>
+			<label><strong>Commit Title:</strong> (<output id="title-char-count"><%= pullRequest.title.length %></output> chars)<br/><input type="text" name="title" value="<%= pullRequest.title %>" id="title-input" /><br/><em>Suggested length: 40-60 characters.</em></label>
+		</p>
+		<p>
+			<label>Additional commit description (optional):<br/><textarea name="description" rows="3" id="description-input">See #<%= pullRequest.number %></textarea></label>
+		<p>
+			You are about to OVERWRITE the <code><%= pullRequest.head.ref %></code> branch in your personal fork.
+		</p>
+		<p>
+			<label><input type="checkbox" name="confirm" /> Yes, I understand. This is what I want.</label>
+		</p>
+		<p>
+			<input type="submit" value="Perform Squash" id="submit-btn" />
+		</p>
+	</form>
 
 	<p id="working" class="progress" style="display: none">
 		<!-- By Sam Herbert (@sherb), for everyone. More @ http://goo.gl/7AJzbL -->
@@ -101,7 +100,6 @@ License & terms of use: http://www.unicode.org/copyright.html#License
 			</g>
 		</svg>
 	</p>
-	<p id="done" class="progress" style="display: none">&#x2705;</p>
 
 </div></body>
 </html>
