@@ -5,23 +5,22 @@
 
 const octokitRest = require("@octokit/rest");
 
-async function getAuthenticatedOctokitClient() {
-	if (process.env.GITHUB_TOKEN) {
-		const client = octokitRest();
-		client.authenticate({
-			type: "token",
-			token: process.env.GITHUB_TOKEN
-		});
-		return client;
-	} else if (process.env.GITHUB_APP_ID) {
-		const token = await require("./github-token").getNewToken();
-		const client = octokitRest();
-		client.authenticate({
-			type: "token",
-			token
-		});
-		return client;
+async function getAuthenticatedOctokitClient(token) {
+	if (!token) {
+		if (process.env.GITHUB_TOKEN) {
+			token = process.env.GITHUB_TOKEN;
+		} else if (process.env.GITHUB_APP_ID) {
+			token = await require("./github-token").getNewToken();
+		} else {
+			throw new Error("Need either GITHUB_TOKEN or GITHUB_APP_ID");
+		}
 	}
+	const client = octokitRest();
+	client.authenticate({
+		type: "token",
+		token
+	});
+	return client;
 }
 
 async function createStatus(statusid, pullRequest, pass, targetUrl, description) {
@@ -77,8 +76,8 @@ async function getCommits(params) {
 	return commitsResult.data;
 }
 
-async function writeSquashCommit({ owner, repo, parentSha, headSha, message }) {
-	const client = await getAuthenticatedOctokitClient();
+async function writeSquashCommit(githubToken, { owner, repo, parentSha, headSha, message }) {
+	const client = await getAuthenticatedOctokitClient(githubToken);
 	const commitData1 = await client.git.getCommit({
 		owner,
 		repo,
@@ -104,9 +103,9 @@ async function writeSquashCommit({ owner, repo, parentSha, headSha, message }) {
 	return commitData2.data;
 }
 
-async function writeBranch(params) {
+async function writeBranch(githubToken, params) {
 	// params should have keys {owner, repo, ref, sha, force}
-	const client = await getAuthenticatedOctokitClient();
+	const client = await getAuthenticatedOctokitClient(githubToken);
 	const refData = await client.git.updateRef(params);
 	return refData.data;
 }

@@ -13,17 +13,20 @@
   "author": "Shane F. Carr",
   "license": "Unicode-DFS-2016",
   "dependencies": {
-    "@octokit/rest": "^16.10.0",
-    "body-parser": "^1.18.3",
+    "@octokit/oauth-login-url": "^2.1.2",
+    "@octokit/rest": "^16.26.0",
+    "body-parser": "^1.19.0",
+    "cookie-session": "^1.3.3",
     "dotenv": "^6.2.0",
     "ejs": "^2.6.1",
-    "express": "^4.16.4",
+    "express": "^4.17.0",
+    "got": "^9.6.0",
     "jira-connector": "^2.10.0",
-    "jsonwebtoken": "^8.4.0",
+    "jsonwebtoken": "^8.5.1",
     "morgan": "^1.9.1"
   },
   "devDependencies": {
-    "eslint": "^5.12.1",
+    "eslint": "^5.16.0",
     "yargs": "^12.0.5"
   }
 }

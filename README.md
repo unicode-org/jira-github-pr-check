@@ -59,6 +59,9 @@ GITHUB_WEBHOOK_SECRET=xxxxxxxxxx
 COMMITTER_NAME=Squash Bot
 COMMITTER_EMAIL=foo@example.com
 
+# Secret for the cookie session, used to store the user's GitHub access token in a cookie.
+COOKIE_SECRET=xxxxxxxxxx
+
 # GitHub permissions:
 
 # Option 1: Personal Access Token; easiest and useful for testing.
@@ -89,4 +92,10 @@ GITHUB_APP_PEM_FILE=keys/xyz.private-key.pem
 # 2b: PEM as an environment variable blob.
 # Encode the PEM file as base64 and save it in this environment variable.
 GITHUB_APP_PEM_BLOB=LS0tLS1...
+
+# In addition, you should make an OAuth App that can get user-by-user permissions to perform squash commits.
+# Create one of these from https://github.com/settings/developers
+# If using an organization account, you can create the OAuth app there.
+GITHUB_OAUTH_CLIENT_ID=xxxxxxxxxx
+GITHUB_OAUTH_CLIENT_SECRET=xxxxxxxxxx
 ```

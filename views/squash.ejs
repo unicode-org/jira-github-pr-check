@@ -7,9 +7,12 @@ License & terms of use: http://www.unicode.org/copyright.html#License
 	<meta charset="utf-8"/>
 	<title>GitHub/Jira Check <%= jiraInfo.issueKey ? ":" + jiraInfo.issueKey : "" %></title>
 	<style type="text/css">
+	<%
+	var color = errorCode ? "#D13B3B" : "#666";
+	%>
 	body {
 		max-width: 760px;
-		background-color: #666;
+		background-color: <%= color %>;
 		margin: 0 auto;
 		padding: 0;
 		font: 16px/1.3 Verdana, sans-serif; /* default font */
@@ -30,6 +33,12 @@ License & terms of use: http://www.unicode.org/copyright.html#License
 		display: inline-block;
 		font-size: 1.2em;
 		width: 80%;
+	}
+	.error {
+		color: #D13B3B;
+	}
+	button {
+		cursor: pointer;
 	}
 	#working {
 		height: 50px;
@@ -71,11 +80,16 @@ $(function() {
 		<p>
 			<label>Additional commit description (optional):<br/><textarea name="description" rows="3" id="description-input">See #<%= pullRequest.number %></textarea></label>
 		<p>
-			You are about to OVERWRITE the <code><%= pullRequest.head.ref %></code> branch in your personal fork.
+			You are about to OVERWRITE the <code><%= pullRequest.head.ref %></code> branch in <a href="<%= pullRequest.head.repo.html_url %>"><%= pullRequest.head.repo.full_name %></a>.
 		</p>
 		<p>
 			<label><input type="checkbox" name="confirm" /> Yes, I understand. This is what I want.</label>
 		</p>
+		<% if (errorCode) { %>
+		<p class="error">
+			NOTICE: Your previous squash attempt failed with code <%= errorCode %>. If you get this error repeatedly, you may not have permission to push to this repository.
+		</p>
+		<% } %>
 		<p>
 			<input type="submit" value="Perform Squash" id="submit-btn" />
 		</p>

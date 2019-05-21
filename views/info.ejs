@@ -30,7 +30,7 @@ License & terms of use: http://www.unicode.org/copyright.html#License
 		color: <%= color %>;
 		padding: 0 50px;
 	}
-	.touch-btn {
+	button {
 		cursor: pointer;
 	}
 	.progress {
@@ -67,20 +67,19 @@ License & terms of use: http://www.unicode.org/copyright.html#License
 
 	<hr/>
 
-	<p>Pull request: &ldquo;<%= pullRequest.title %>&rdquo;</p>
+	<p><a href="<%= pullRequest.html_url %>">Pull request</a>: &ldquo;<%= pullRequest.title %>&rdquo;</p>
 
 	<% if (badCommit) { %>
-	<p><a href="https://github.com/<%= params.owner %>/<%= params.repo %>/pull/<%= params.number %>/commits/<%= badCommit.sha %>">Commit</a> message: &ldquo;<%= badCommit.commit.message %>&rdquo;
-	<p><a href="http://site.icu-project.org/repository/gitdev">More Information</a></p>
+	<p><a href="https://github.com/<%= params.owner %>/<%= params.repo %>/pull/<%= params.number %>/commits/<%= badCommit.sha %>">Bad commit message</a>: &ldquo;<%= badCommit.commit.message %>&rdquo;
 	<% } %>
-
-	<p>Jira status: <%= jiraInfo.jiraStatus || "N/A" %></p>
 
 	<% if (jiraUrl) { %>
-	<p><a href="<%= jiraUrl %>">Jira Link</a></p>
+	<p>Jira status (<a href="<%= jiraUrl %>"><%= jiraInfo.issueKey %></a>): <%= jiraInfo.jiraStatus || "N/A" %></p>
 	<% } %>
 
-	<p id="touch" class="progress"><button class="touch-btn" onclick="touch()">Update GitHub Status</button></p>
+	<p><a href="<%= squashUrl %>"><button>Squash Branch&hellip;</button></a></p>
+
+	<p id="touch" class="progress"><button onclick="touch()">Update GitHub Status</button></p>
 
 	<p id="working" class="progress" style="display: none">
 		<!-- By Sam Herbert (@sherb), for everyone. More @ http://goo.gl/7AJzbL -->

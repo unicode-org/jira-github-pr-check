@@ -4,12 +4,14 @@
 "use strict";
 
 const bodyParser = require("body-parser");
+const cookieSession = require("cookie-session");
 const crypto = require("crypto");
 const express = require("express");
 const morgan = require("morgan");
 
 const github = require("./src/github-status");
 const jira = require("./src/jira-status");
+const githubUser = require("./src/github-user");
 
 const JIRA_COMMIT_PATTERN = /^([A-Z]+-\d+)\u0020\w/;
 const PR_BODY_VAR_PATTERN = /^([A-Z_]+)=(.*?)(\s*#.*)?$/gm;
@@ -39,6 +41,10 @@ function parsePullRequestFlags(body) {
 		prFlags[match[1]] = value;
 	}
 	return prFlags;
+}
+
+function makeViewUrl(endpoint, params) {
+	return `${process.env.URL_PREFIX}/${endpoint}/${params.owner}/${params.repo}/${params.number}`;
 }
 
 async function getJiraInfo(pullRequest) {
@@ -209,7 +215,7 @@ async function touch(pullRequest, jiraInfo) {
 		console.log("Not touching: PR is " + state + ": " + number);
 		return;
 	}
-	const url = process.env.URL_PREFIX + "/info/" + owner + "/" + repo + "/" + number;
+	const url = makeViewUrl("info", { owner, repo, number });
 	const multiCommitPass = jiraInfo.numCommits === 1
 		|| (jiraInfo.numCommits > 1 && (jiraInfo.isMaintMerge || jiraInfo.prFlags["ALLOW_MANY_COMMITS"]));
 	const multiCommitMessage = (jiraInfo.numCommits === 0) ? "No commits found on PR" : (jiraInfo.numCommits === 1) ? "This PR includes exactly 1 commit!" : "This PR has " + jiraInfo.numCommits + " commits" + (multiCommitPass ? "" : "; consider squashing.");
@@ -223,21 +229,27 @@ async function touch(pullRequest, jiraInfo) {
 	return Promise.all(promises);
 }
 
-async function squash(params, pullRequest) {
+async function squash(req) {
+	const pullRequest = await github.getPullRequest(req.body);
 	const owner = pullRequest.head.repo.owner.login;
 	const repo = pullRequest.head.repo.name;
 	const ref = "heads/" + pullRequest.head.ref;
 	const parentSha = pullRequest.base.sha;
 	const headSha = pullRequest.head.sha;
-	const message = params.title + "\n\n" + params.description;
-	const commitData = await github.writeSquashCommit({
+	const message = req.body.title + "\n\n" + req.body.description;
+	const githubToken = req.session["gh_user"];
+	if (!githubToken) {
+		console.error("Null github token!");
+		return;
+	}
+	const commitData = await github.writeSquashCommit(githubToken, {
 		owner,
 		repo,
 		parentSha,
 		headSha,
 		message
 	});
-	await github.writeBranch({
+	await github.writeBranch(githubToken, {
 		owner,
 		repo,
 		ref,
@@ -245,6 +257,8 @@ async function squash(params, pullRequest) {
 		force: true
 	});
 }
+
+const COOKIE_SECRET = process.env.COOKIE_SECRET || Math.random().toString(36).substr(2, 15);
 
 const app = express()
 	.use(bodyParser.json({
@@ -259,6 +273,7 @@ const app = express()
 		}
 	}))
 	.use(bodyParser.urlencoded({ extended: false }))
+	.use(cookieSession({ secret: COOKIE_SECRET }))
 	.use(morgan("tiny"))
 	.get("/info/:owner/:repo/:number", async (req, res) => {
 		try {
@@ -271,7 +286,8 @@ const app = express()
 				jiraUrl: jiraInfo.issueKey ? jira.getUrl(jiraInfo.issueKey) : undefined,
 				badCommit: jiraInfo.badCommit,
 				checkerGithubUrl: require("./package.json").repository.url,
-				instructionsUrl: process.env.INSTRUCTIONS_URL
+				instructionsUrl: process.env.INSTRUCTIONS_URL,
+				squashUrl: makeViewUrl("squash", req.params),
 			});
 		} catch (err) {
 			if (err.code) {
@@ -298,7 +314,15 @@ const app = express()
 		}
 	})
 	.get("/squash/:owner/:repo/:number", async (req, res) => {
+		if (!req.session["gh_user"]) {
+			// Authorize GitHub first
+			const { url, state } = githubUser.createGithubLoginUrl();
+			req.session["gh_state"] = state;
+			req.session["redirect"] = req.originalUrl;
+			return res.redirect(url);
+		}
 		try {
+			// Continue to Squash UI
 			const pullRequest = await github.getPullRequest(req.params);
 			const jiraInfo = await getJiraInfo(pullRequest);
 			return res.render("squash.ejs", {
@@ -306,30 +330,56 @@ const app = express()
 				pullRequest,
 				jiraInfo,
 				checkerGithubUrl: require("./package.json").repository.url,
+				errorCode: req.query.code,
 			});
 		} catch (err) {
+			console.error(err);
 			if (err.code) {
 				return res.sendStatus(err.code);
 			} else {
-				console.error(err);
+				return res.sendStatus(500);
+			}
+		}
+	})
+	.get("/github-auth", async (req, res) => {
+		if (req.query.state !== req.session["gh_state"]) {
+			// Unexpected state
+			return res.sendStatus(400);
+		}
+		try {
+			// Exchange code for an OAuth token
+			const redirectTo = req.session["redirect"];
+			const token = await githubUser.getToken(req.query);
+			req.session["gh_user"] = token;
+			delete req.session["gh_state"];
+			delete req.session["redirect"];
+			return res.redirect(redirectTo);
+		} catch (err) {
+			console.error(err);
+			if (err.code) {
+				return res.sendStatus(err.code);
+			} else {
 				return res.sendStatus(500);
 			}
 		}
 	})
 	.post("/do-squash", async (req, res) => {
+		if (!req.session["gh_user"]) {
+			// Unexpected state
+			return res.sendStatus(400);
+		}
 		try {
 			if (!req.body.confirm) {
 				return res.status(422).send("Please check the confirmation box!");
 			}
-			const pullRequest = await github.getPullRequest(req.body);
-			await squash(req.body, pullRequest);
-			return res.redirect(process.env.URL_PREFIX + "/info/" + req.body.owner + "/" + req.body.repo + "/" + req.body.number);
+			await squash(req);
+			return res.redirect(makeViewUrl("info", req.body));
 		} catch (err) {
 			if (err.code) {
-				console.error(err);
-				return res.sendStatus(err.code);
+				// If this failed gracefully, send the user to the GitHub login flow. The token could be expired or deactivated or have the wrong scopes.
+				delete req.session["gh_user"];
+				return res.redirect(makeViewUrl("squash", req.body) + "?code=" + err.code);
 			} else {
-				console.error(err);
 				return res.sendStatus(500);
 			}
 		}
