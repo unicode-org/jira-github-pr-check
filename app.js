@@ -114,7 +114,8 @@ async function getJiraInfo(pullRequest) {
 				isMaintMerge,
 				prFlags,
 				pass: false,
-				description: "Commit " + commitInfo.sha.substr(0, 7) + " is for " + commitIssueKey + ", but the PR is for " + issueKey + "; to disable, set DISABLE_JIRA_ISSUE_MATCH=true in the PR description",
+				description: "Commit " + commitInfo.sha.substr(0, 7) + " is for " + commitIssueKey + ", but the PR is for " + issueKey,
+				extendedDescription: "Please fix your commit message to have the same ticket number as the pull request. If the inconsistency is intentional, you can disable this warning with DISABLE_JIRA_ISSUE_MATCH=true in the PR description.",
 				badCommit: commitInfo
 			};
 		}
@@ -141,7 +142,7 @@ async function getJiraInfo(pullRequest) {
 		isMaintMerge,
 		prFlags,
 		pass: true,
-		description: issueKey + " \u201C" + jiraSummary + "\u201D (status is " + jiraStatus + ")"
+		description: issueKey + " \u201C" + jiraSummary + "\u201D"
 	};
 }
 

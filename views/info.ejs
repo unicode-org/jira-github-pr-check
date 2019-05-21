@@ -24,14 +24,18 @@ License & terms of use: http://www.unicode.org/copyright.html#License
 		padding: 10px;
 		position: relative;
 	}
+	button, input[type="submit"] {
+		cursor: pointer;
+	}
 	.verdict {
 		font-weight: bold;
 		font-size: 2em;
 		color: <%= color %>;
 		padding: 0 50px;
 	}
-	button {
-		cursor: pointer;
+	.verdict-extended {
+		color: <%= color %>;
+		margin: 10px 50px;
 	}
 	.progress {
 		height: 50px;
@@ -60,6 +64,10 @@ License & terms of use: http://www.unicode.org/copyright.html#License
 	<a href="<%= checkerGithubUrl %>" id="fork-me"><img width="149" height="149" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png?resize=149%2C149" alt="Fork me on GitHub" data-recalc-dims="1"></a>
 
 	<p class="verdict"><%= jiraInfo.description %></p>
+
+	<% if (jiraInfo.extendedDescription) { %>
+	<p class="verdict-extended"><%= jiraInfo.extendedDescription %></p>
+	<% } %>
 
 	<% if (instructionsUrl) { %>
 	<p><em><a href="<%= instructionsUrl %>">Read our contribution guidelines</a></em></p>
