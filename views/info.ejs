@@ -49,7 +49,7 @@ License & terms of use: http://www.unicode.org/copyright.html#License
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script>
 	function touch() {
-		var url = "<%= process.env.URL_PREFIX %>/touch/<%= params.owner %>/<%= params.repo %>/<%= params.number %>";
+		var url = "<%= process.env.URL_PREFIX %>/touch/<%= params.owner %>/<%= params.repo %>/<%= params.pull_number %>";
 		$("#touch").hide();
 		$("#working").show();
 		$.post(url, function() {
@@ -78,7 +78,7 @@ License & terms of use: http://www.unicode.org/copyright.html#License
 	<p><a href="<%= pullRequest.html_url %>">Pull request</a>: &ldquo;<%= pullRequest.title %>&rdquo;</p>
 
 	<% if (badCommit) { %>
-	<p><a href="https://github.com/<%= params.owner %>/<%= params.repo %>/pull/<%= params.number %>/commits/<%= badCommit.sha %>">Bad commit message</a>: &ldquo;<%= badCommit.commit.message %>&rdquo;
+	<p><a href="https://github.com/<%= params.owner %>/<%= params.repo %>/pull/<%= params.pull_number %>/commits/<%= badCommit.sha %>">Bad commit message</a>: &ldquo;<%= badCommit.commit.message %>&rdquo;
 	<% } %>
 
 	<% if (jiraUrl) { %>

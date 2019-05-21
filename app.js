@@ -44,7 +44,7 @@ function parsePullRequestFlags(body) {
 }
 
 function makeViewUrl(endpoint, params) {
-	return `${process.env.URL_PREFIX}/${endpoint}/${params.owner}/${params.repo}/${params.number}`;
+	return `${process.env.URL_PREFIX}/${endpoint}/${params.owner}/${params.repo}/${params.pull_number}`;
 }
 
 async function getJiraInfo(pullRequest) {
@@ -65,7 +65,7 @@ async function getJiraInfo(pullRequest) {
 		github.getCommits({
 			owner: pullRequest.base.repo.owner.login,
 			repo: pullRequest.base.repo.name,
-			number: pullRequest.number
+			pull_number: pullRequest.number
 		})
 	]);
 	const jiraStatus = jiraIssue && jiraIssue.fields.status.name;
@@ -157,7 +157,7 @@ async function checkForcePush({ before, after }, pullRequest) {
 		return;
 	}
 	const base = pullRequest.base.sha;
-	const number = pullRequest.number;
+	const pull_number = pullRequest.number;
 	const [ beforeRes, afterRes ] = await Promise.all([
 		github.getCommitDiff({ owner, repo, base, head: before }),
 		github.getCommitDiff({ owner, repo, base, head: after })
@@ -204,19 +204,19 @@ async function checkForcePush({ before, after }, pullRequest) {
 		console.log(`Force-Push has no file diffs: ${owner}/${repo} ${before} ${after}`);
 	}
 	body += "\n\n~ Your Friendly Jira-GitHub PR Checker Bot";
-	return github.postComment({ owner, repo, number, body });
+	return github.postComment({ owner, repo, pull_number, body });
 }
 
 async function touch(pullRequest, jiraInfo) {
 	const owner = pullRequest.base.repo.owner.login;
 	const repo = pullRequest.base.repo.name;
-	const number = pullRequest.number;
+	const pull_number = pullRequest.number;
 	const state = pullRequest.state;
 	if (state !== "open") {
-		console.log("Not touching: PR is " + state + ": " + number);
+		console.log("Not touching: PR is " + state + ": " + pull_number);
 		return;
 	}
-	const url = makeViewUrl("info", { owner, repo, number });
+	const url = makeViewUrl("info", { owner, repo, pull_number });
 	const multiCommitPass = jiraInfo.numCommits === 1
 		|| (jiraInfo.numCommits > 1 && (jiraInfo.isMaintMerge || jiraInfo.prFlags["ALLOW_MANY_COMMITS"]));
 	const multiCommitMessage = (jiraInfo.numCommits === 0) ? "No commits found on PR" : (jiraInfo.numCommits === 1) ? "This PR includes exactly 1 commit!" : "This PR has " + jiraInfo.numCommits + " commits" + (multiCommitPass ? "" : "; consider squashing.");
@@ -276,7 +276,7 @@ const app = express()
 	.use(bodyParser.urlencoded({ extended: false }))
 	.use(cookieSession({ secret: COOKIE_SECRET }))
 	.use(morgan("tiny"))
-	.get("/info/:owner/:repo/:number", async (req, res) => {
+	.get("/info/:owner/:repo/:pull_number", async (req, res) => {
 		try {
 			const pullRequest = await github.getPullRequest(req.params);
 			const jiraInfo = await getJiraInfo(pullRequest);
@@ -299,7 +299,7 @@ const app = express()
 			}
 		}
 	})
-	.post("/touch/:owner/:repo/:number", async (req, res) => {
+	.post("/touch/:owner/:repo/:pull_number", async (req, res) => {
 		try {
 			const pullRequest = await github.getPullRequest(req.params);
 			const jiraInfo = await getJiraInfo(pullRequest);
@@ -314,12 +314,12 @@ const app = express()
 			}
 		}
 	})
-	.get("/squash/:owner/:repo/:number", async (req, res) => {
+	.get("/squash/:owner/:repo/:pull_number", async (req, res) => {
 		if (!req.session["gh_user"]) {
 			// Authorize GitHub first
 			const { url, state } = githubUser.createGithubLoginUrl();
 			req.session["gh_state"] = state;
-			req.session["redirect"] = req.originalUrl;
+			req.session["redirect"] = process.env.URL_PREFIX + req.originalUrl;
 			return res.redirect(url);
 		}
 		try {

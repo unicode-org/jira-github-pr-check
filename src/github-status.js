@@ -3,7 +3,7 @@
 
 "use strict";
 
-const octokitRest = require("@octokit/rest");
+const Octokit = require("@octokit/rest");
 
 async function getAuthenticatedOctokitClient(token) {
 	if (!token) {
@@ -15,12 +15,9 @@ async function getAuthenticatedOctokitClient(token) {
 			throw new Error("Need either GITHUB_TOKEN or GITHUB_APP_ID");
 		}
 	}
-	const client = octokitRest();
-	client.authenticate({
-		type: "token",
-		token
+	return new Octokit({
+		auth: token
 	});
-	return client;
 }
 
 async function createStatus(statusid, pullRequest, pass, targetUrl, description) {
@@ -45,7 +42,7 @@ async function createStatus(statusid, pullRequest, pass, targetUrl, description)
 }
 
 async function getPullRequest(params) {
-	// params should have keys {owner, repo, number}
+	// params should have keys {owner, repo, pull_number}
 	const client = await getAuthenticatedOctokitClient();
 	const pullRequest = await client.pulls.get(params);
 	return pullRequest.data;
@@ -59,14 +56,14 @@ async function getCommitDiff(params) {
 }
 
 async function postComment(params) {
-	// params should have keys {owner, repo, number, body}
+	// params should have keys {owner, repo, pull_number, body}
 	const client = await getAuthenticatedOctokitClient();
 	// Note: pull request comments are handled via the issues API
 	return client.issues.createComment(params);
 }
 
 async function getCommits(params) {
-	// params should have keys {owner, repo, number}
+	// params should have keys {owner, repo, pull_number}
 	const client = await getAuthenticatedOctokitClient();
 	// Get max commits per page (100)
 	const newParams = Object.assign({

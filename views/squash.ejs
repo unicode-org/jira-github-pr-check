@@ -73,7 +73,7 @@ $(function() {
 	<form method="POST" action="<%= process.env.URL_PREFIX %>/do-squash %>" id="form">
 		<input type="hidden" name="owner" value="<%= params.owner %>" />
 		<input type="hidden" name="repo" value="<%= params.repo %>" />
-		<input type="hidden" name="number" value="<%= params.number %>" />
+		<input type="hidden" name="pull_number" value="<%= params.pull_number %>" />
 		<p>
 			<label><strong>Commit Title:</strong> (<output id="title-char-count"><%= pullRequest.title.length %></output> chars)<br/><input type="text" name="title" value="<%= pullRequest.title %>" id="title-input" /><br/><em>Suggested length: 40-60 characters.</em></label>
 		</p>
