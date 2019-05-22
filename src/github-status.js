@@ -75,11 +75,21 @@ async function getCommits(params) {
 
 async function writeSquashCommit(githubToken, { owner, repo, parentSha, headSha, message }) {
 	const client = await getAuthenticatedOctokitClient(githubToken);
-	const commitData1 = await client.git.getCommit({
-		owner,
-		repo,
-		commit_sha: headSha
-	});
+	const [commitData1, commitDiff] = await Promise.all([
+		client.git.getCommit({
+			owner,
+			repo,
+			commit_sha: headSha
+		}),
+		getCommitDiff({
+			owner,
+			repo,
+			base: parentSha,
+			head: headSha
+		})
+	]);
+	// Use the merge base sha, NOT the latest base commit
+	const mergeBaseSha = commitDiff.merge_base_commit.sha;
 	// Copy the author to the committer, and set the date to today
 	const committer = Object.assign({}, commitData1.data.author);
 	committer.date = new Date().toISOString();
@@ -93,7 +103,7 @@ async function writeSquashCommit(githubToken, { owner, repo, parentSha, headSha,
 		repo,
 		message,
 		tree: commitData1.data.tree.sha,
-		parents: [parentSha],
+		parents: [mergeBaseSha],
 		author: commitData1.data.author,
 		committer
 	});

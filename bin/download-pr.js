@@ -27,7 +27,7 @@ async function main() {
 	const pullRequest = await github.getPullRequest({
 		owner: argv.owner,
 		repo: argv.repo,
-		number: argv.number
+		pull_number: argv.number
 	});
 	return pullRequest;
 }
