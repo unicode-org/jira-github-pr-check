@@ -204,7 +204,7 @@ async function checkForcePush({ before, after }, pullRequest) {
 		console.log(`Force-Push has no file diffs: ${owner}/${repo} ${before} ${after}`);
 	}
 	body += "\n\n~ Your Friendly Jira-GitHub PR Checker Bot";
-	return github.postComment({ owner, repo, pull_number, body });
+	return github.postComment({ owner, repo, issue_number: pull_number, body });
 }
 
 async function touch(pullRequest, jiraInfo) {

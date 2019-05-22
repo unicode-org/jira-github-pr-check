@@ -56,7 +56,7 @@ async function getCommitDiff(params) {
 }
 
 async function postComment(params) {
-	// params should have keys {owner, repo, pull_number, body}
+	// params should have keys {owner, repo, issue_number, body}
 	const client = await getAuthenticatedOctokitClient();
 	// Note: pull request comments are handled via the issues API
 	return client.issues.createComment(params);
