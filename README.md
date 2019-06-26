@@ -99,3 +99,14 @@ GITHUB_APP_PEM_BLOB=LS0tLS1...
 GITHUB_OAUTH_CLIENT_ID=xxxxxxxxxx
 GITHUB_OAUTH_CLIENT_SECRET=xxxxxxxxxx
 ```
+
+## Docker
+
+(Experimental)
+
+`docker build -t jira-github-pr-check .`
+`docker run --rm -v $(pwd)/.env:/usr/src/app/.env:ro -p 3000:3000 jira-github-pr-check`
+
+## LICENSE
+
+See [LICENSE](./LICENSE)
