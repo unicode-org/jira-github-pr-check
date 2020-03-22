@@ -74,11 +74,11 @@ async function getJiraInfo(pullRequest) {
 	const isMaintMerge = (pullRequest.base.ref === "master"
 		&& pullRequest.head.ref.match(/^maint\//)
 		&& pullRequest.base.repo.full_name == pullRequest.head.repo.full_name);
+	let jiraApprovedStatuses = process.env.JIRA_APPROVED_STATUSES || "Accepted, Reviewing, Review Feedback"
+	const jiraApprovedStatusesArray = jiraApprovedStatuses.split(",").map(status => status.trim())
 
 	// Check Jira ticket for validity
-	if (jiraStatus !== "Accepted" &&
-			jiraStatus !== "Reviewing" &&
-			jiraStatus !== "Review Feedback") {
+	if (!jiraApprovedStatuses.includes(jiraStatus)) {
 		return {
 			issueKey,
 			jiraStatus,
@@ -121,7 +121,7 @@ async function getJiraInfo(pullRequest) {
 		}
 	}
 
-	// Since we can't easilly check more than 100 commits, reject PRs with more than 100 commits
+	// Since we can't easily check more than 100 commits, reject PRs with more than 100 commits
 	if (commits.length === 100) {
 		return {
 			issueKey,

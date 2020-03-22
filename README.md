@@ -33,9 +33,6 @@ The following environment variables are expected.  If a `.env` file is present, 
 # Hostname of your Jira instance.
 JIRA_URL=unicode-org.atlassian.net
 
-# Hostname of your GitHub instance
-GITHUB_URL=https://github.mycompany.com/api/v3
-
 # Authentication for your Jira instance.
 # If not present, authentication for Jira will not be used.
 #
@@ -43,6 +40,9 @@ GITHUB_URL=https://github.mycompany.com/api/v3
 # API token generated at https://id.atlassian.com/manage/api-tokens
 JIRA_USERNAME=foo@example.com
 JIRA_PASSWORD=bar
+
+# List of issue statuses that would be accepted
+JIRA_APPROVED_STATUSES="Approved, Progress"
 
 # URL prefix used for hyperlinks.
 URL_PREFIX=http://localhost:3000
@@ -64,6 +64,9 @@ COMMITTER_EMAIL=foo@example.com
 
 # Secret for the cookie session, used to store the user's GitHub access token in a cookie.
 COOKIE_SECRET=xxxxxxxxxx
+
+# Hostname of your GitHub instance
+GITHUB_URL=https://github.mycompany.com/api/v3
 
 # GitHub permissions:
 
