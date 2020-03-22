@@ -33,6 +33,9 @@ The following environment variables are expected.  If a `.env` file is present, 
 # Hostname of your Jira instance.
 JIRA_URL=unicode-org.atlassian.net
 
+# Hostname of your GitHub instance
+GITHUB_URL=https://github.mycompany.com/api/v3
+
 # Authentication for your Jira instance.
 # If not present, authentication for Jira will not be used.
 #

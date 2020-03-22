@@ -15,8 +15,17 @@ async function getAuthenticatedOctokitClient(token) {
 			throw new Error("Need either GITHUB_TOKEN or GITHUB_APP_ID");
 		}
 	}
+
+	let github_url;
+	if (process.env.GITHUB_URL) {
+		github_url = process.env.GITHUB_URL;
+	} else {
+	    github_url = "https://api.github.com";
+	}
+
 	return new Octokit({
-		auth: token
+		auth: token,
+		baseUrl: github_url
 	});
 }
 
