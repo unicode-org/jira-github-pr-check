@@ -78,7 +78,7 @@ async function getJiraInfo(pullRequest) {
 	const jiraApprovedStatusesArray = jiraApprovedStatuses.split(",").map(status => status.trim())
 
 	// Check Jira ticket for validity
-	if (!jiraApprovedStatuses.includes(jiraStatus)) {
+	if (!jiraApprovedStatuses.includes(jiraStatus) && process.env.JIRA_STATUS_CHECK === "TRUE") {
 		return {
 			issueKey,
 			jiraStatus,
@@ -93,33 +93,36 @@ async function getJiraInfo(pullRequest) {
 	}
 
 	// Check for consistency with the commit messages
-	for (const commitInfo of commits) {
-		const commitIssueKey = parseMessage(commitInfo.commit.message);
-		if (commitIssueKey === null) {
-			return {
-				issueKey,
-				jiraStatus,
-				numCommits,
-				isMaintMerge,
-				prFlags,
-				pass: false,
-				description: "Commit message for " + commitInfo.sha.substr(0, 7) + " fails validation",
-				badCommit: commitInfo
-			};
-		} else if (commitIssueKey !== issueKey && !prFlags["DISABLE_JIRA_ISSUE_MATCH"] && !isMaintMerge) {
-			return {
-				issueKey,
-				jiraStatus,
-				numCommits,
-				isMaintMerge,
-				prFlags,
-				pass: false,
-				description: "Commit " + commitInfo.sha.substr(0, 7) + " is for " + commitIssueKey + ", but the PR is for " + issueKey,
-				extendedDescription: "Please fix your commit message to have the same ticket number as the pull request. If the inconsistency is intentional, you can disable this warning with DISABLE_JIRA_ISSUE_MATCH=true in the PR description.",
-				badCommit: commitInfo
-			};
+	if(process.env.SEARCH_JIRA_ISSUE_IN_COMMIT === "TRUE") {
+		for (const commitInfo of commits) {
+			const commitIssueKey = parseMessage(commitInfo.commit.message);
+			if (commitIssueKey === null) {
+				return {
+					issueKey,
+					jiraStatus,
+					numCommits,
+					isMaintMerge,
+					prFlags,
+					pass: false,
+					description: "Commit message for " + commitInfo.sha.substr(0, 7) + " fails validation",
+					badCommit: commitInfo
+				};
+			} else if (commitIssueKey !== issueKey && !prFlags["DISABLE_JIRA_ISSUE_MATCH"] && !isMaintMerge) {
+				return {
+					issueKey,
+					jiraStatus,
+					numCommits,
+					isMaintMerge,
+					prFlags,
+					pass: false,
+					description: "Commit " + commitInfo.sha.substr(0, 7) + " is for " + commitIssueKey + ", but the PR is for " + issueKey,
+					extendedDescription: "Please fix your commit message to have the same ticket number as the pull request. If the inconsistency is intentional, you can disable this warning with DISABLE_JIRA_ISSUE_MATCH=true in the PR description.",
+					badCommit: commitInfo
+				};
+			}
 		}
 	}
+
 
 	// Since we can't easily check more than 100 commits, reject PRs with more than 100 commits
 	if (commits.length === 100) {
@@ -222,8 +225,12 @@ async function touch(pullRequest, jiraInfo) {
 	const multiCommitMessage = (jiraInfo.numCommits === 0) ? "No commits found on PR" : (jiraInfo.numCommits === 1) ? "This PR includes exactly 1 commit!" : "This PR has " + jiraInfo.numCommits + " commits" + (multiCommitPass ? "" : "; consider squashing.");
 	const promises = [
 		github.createStatus("jira-ticket", pullRequest, jiraInfo.pass, url, jiraInfo.description),
-		github.createStatus("single-commit", pullRequest, multiCommitPass, undefined, multiCommitMessage)
 	];
+
+	if (!(process.env.ALLOW_MANY_COMMITS === "TRUE")) {
+		promises.push(github.createStatus("single-commit", pullRequest, multiCommitPass, undefined, multiCommitMessage))
+	}
+
 	if (jiraInfo.isMaintMerge) {
 		promises.push(github.createStatus("maint-merge", pullRequest, false, undefined, "Reminder: use a MERGE COMMIT and new ticket in the message."));
 	}
