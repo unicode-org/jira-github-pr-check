@@ -219,10 +219,10 @@ async function touch(pullRequest, jiraInfo) {
 	const url = makeViewUrl("info", { owner, repo, pull_number });
 	const multiCommitPass = jiraInfo.numCommits === 1
 		|| (jiraInfo.numCommits > 1 && (jiraInfo.isMaintMerge || jiraInfo.prFlags["ALLOW_MANY_COMMITS"]));
-	const multiCommitMessage = (jiraInfo.numCommits === 0) ? "No commits found on PR" : (jiraInfo.numCommits === 1) ? "This PR includes exactly 1 commit!" : "This PR has " + jiraInfo.numCommits + " commits" + (multiCommitPass ? "" : "; consider squashing.");
+	const multiCommitMessage = (jiraInfo.numCommits === 0) ? "No commits found on PR" : (jiraInfo.numCommits === 1) ? "This PR includes exactly 1 commit!" : "This PR has " + jiraInfo.numCommits + " commits" + (multiCommitPass ? "" : "; consider squashing:");
 	const promises = [
 		github.createStatus("jira-ticket", pullRequest, jiraInfo.pass, url, jiraInfo.description),
-		github.createStatus("single-commit", pullRequest, multiCommitPass, undefined, multiCommitMessage)
+		github.createStatus("single-commit", pullRequest, multiCommitPass, url, multiCommitMessage)
 	];
 	if (jiraInfo.isMaintMerge) {
 		promises.push(github.createStatus("maint-merge", pullRequest, false, undefined, "Reminder: use a MERGE COMMIT and new ticket in the message."));
