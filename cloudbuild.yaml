@@ -1,0 +1,22 @@
+# © 2020 and later: Unicode, Inc. and others.
+# License & terms of use: http://www.unicode.org/copyright.html#License
+
+# Use this file to automatically deploy updates to the Cloud Function upon
+# pushing to the repo.  Enable it by creating a Cloud Build Trigger.
+
+steps:
+- name: 'gcr.io/cloud-builders/gcloud'
+  args:
+    - 'functions'
+    - 'deploy'
+    - '$_FUNCTION_NAME'
+    - '--source'
+    - '$_DEPLOY_SOURCE'
+    - '--runtime'
+    - 'nodejs10'
+    - '--entry-point'
+    - 'app'
+  dir: 'functions/autodeploy'
+substitutions:
+  _FUNCTION_NAME: <fill-me-in-via-substitution>
+  _DEPLOY_SOURCE: <fill-me-in-via-substitution>
