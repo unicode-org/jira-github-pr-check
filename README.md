@@ -13,6 +13,8 @@ To run as a server locally on the port given in the environment variable:
 
 If running as a GCP Cloud Function, set "app" as the "Function to execute" in the Cloud Functions settings page.  The server.js file will not be used; GCP will import the library function from app.js directly.
 
+The file "cloudbuild.yaml" is available in case you want to set up an automatic deployment based on a git repository push trigger.
+
 ## PR Flags
 
 The following "variables" can be set in the pull request body to change the behavior of the checker.
