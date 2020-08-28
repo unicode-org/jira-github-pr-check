@@ -207,9 +207,15 @@ async function checkForcePush({ before, after }, pullRequest) {
 	return github.postComment({ owner, repo, issue_number: pull_number, body });
 }
 
+const DO_NOT_TOUCH_REPOS = (process.env.DO_NOT_TOUCH_REPOS || "").split(",");
+
 async function touch(pullRequest, jiraInfo) {
 	const owner = pullRequest.base.repo.owner.login;
 	const repo = pullRequest.base.repo.name;
+	if (DO_NOT_TOUCH_REPOS.indexOf(owner + "/" + repo) !== -1) {
+		console.log("Not touching: repo is " + owner + "/" + repo);
+		return;
+	}
 	const pull_number = pullRequest.number;
 	const state = pullRequest.state;
 	if (state !== "open") {

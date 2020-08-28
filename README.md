@@ -64,6 +64,9 @@ COMMITTER_EMAIL=foo@example.com
 # Secret for the cookie session, used to store the user's GitHub access token in a cookie.
 COOKIE_SECRET=xxxxxxxxxx
 
+# Optional list of repos to disable status updates (only enable force-push checking)
+DO_NOT_TOUCH_REPOS=org/repo1,org/repo2
+
 # GitHub permissions:
 
 # Option 1: Personal Access Token; easiest and useful for testing.
