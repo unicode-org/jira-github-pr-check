@@ -13,6 +13,8 @@ To run as a server locally on the port given in the environment variable:
 
 If running as a GCP Cloud Function, set "app" as the "Function to execute" in the Cloud Functions settings page.  The server.js file will not be used; GCP will import the library function from app.js directly.
 
+The file "cloudbuild.yaml" is available in case you want to set up an automatic deployment based on a git repository push trigger.
+
 ## PR Flags
 
 The following "variables" can be set in the pull request body to change the behavior of the checker.
@@ -73,8 +75,12 @@ COMMITTER_EMAIL=foo@example.com
 # Secret for the cookie session, used to store the user's GitHub access token in a cookie.
 COOKIE_SECRET=xxxxxxxxxx
 
+
 # Hostname of your GitHub instance
 GITHUB_URL=https://github.mycompany.com/api/v3
+
+# Optional list of repos to disable status updates (only enable force-push checking)
+DO_NOT_TOUCH_REPOS=org/repo1,org/repo2
 
 # GitHub permissions:
 
