@@ -71,7 +71,7 @@ async function getJiraInfo(pullRequest) {
 	const jiraStatus = jiraIssue && jiraIssue.fields.status.name;
 	const jiraSummary = jiraIssue && jiraIssue.fields.summary;
 	const numCommits = commits.length;
-	const isMaintMerge = (pullRequest.base.ref === "master"
+	const isMaintMerge = ((pullRequest.base.ref === "master" || pullRequest.base.ref === "main")
 		&& pullRequest.head.ref.match(/^maint\//)
 		&& pullRequest.base.repo.full_name == pullRequest.head.repo.full_name);
 
