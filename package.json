@@ -21,7 +21,7 @@
     "ejs": "^2.6.1",
     "express": "^4.17.3",
     "got": "^9.6.0",
-    "jira-connector": "^2.10.0",
+    "jira-connector": "git+https://github.com/okonech/jira-connector.git#674f218b282ca051f9e0338633dc59f225dab2cc",
     "jsonwebtoken": "^8.5.1",
     "morgan": "^1.9.1"
   },
