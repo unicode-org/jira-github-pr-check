@@ -41,8 +41,12 @@ async function doGetStatus(issueKey) {
 	});
 }
 
-/** wrapper with some retry */
 async function getStatus(issueKey) {
+	return doGetStatus(issueKey);
+}
+
+/** wrapper with some retry */
+async function getStatusWithRetry(issueKey) {
 	try {
 		return await doGetStatus(issueKey); // if OK, return
 	} catch(e) {
@@ -65,5 +69,6 @@ function getUrl(issueKey) {
 
 module.exports = {
 	getStatus,
+	getStatusWithRetry,
 	getUrl
 };
