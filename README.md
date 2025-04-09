@@ -43,6 +43,17 @@ JIRA_URL=unicode-org.atlassian.net
 JIRA_USERNAME=foo@example.com
 JIRA_PASSWORD=bar
 
+# List of issue statuses that would be accepted
+JIRA_STATUS_CHECK=TRUE
+JIRA_APPROVED_STATUSES="Approved, Progress"
+
+# Search for the Jira Issue ID in commit message
+SEARCH_JIRA_ISSUE_IN_COMMIT=TRUE
+
+# Optional variable to allow multiple commits in the same PR
+ALLOW_MANY_COMMITS=TRUE
+
+
 # URL prefix used for hyperlinks.
 URL_PREFIX=http://localhost:3000
 
@@ -63,6 +74,10 @@ COMMITTER_EMAIL=foo@example.com
 
 # Secret for the cookie session, used to store the user's GitHub access token in a cookie.
 COOKIE_SECRET=xxxxxxxxxx
+
+
+# Hostname of your GitHub instance
+GITHUB_URL=https://github.mycompany.com/api/v3
 
 # Optional list of repos to disable status updates (only enable force-push checking)
 DO_NOT_TOUCH_REPOS=org/repo1,org/repo2
